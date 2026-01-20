@@ -33,9 +33,10 @@ jobs:
             --print-build-logs \
             --expr '
               let
-                pkgs = import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/nixos-25.11.tar.gz") {};
+                pkgs = import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/nixos-24.11.tar.gz") {};
+                nixos = import (pkgs.path + "/nixos/lib/eval-config.nix") { };
               in
-                pkgs.nixos-manual.manualHTML
+                nixos.config.system.build.manual.manualHTML
             '
 
       - name: Build Manual from Unstable Channel
@@ -47,8 +48,9 @@ jobs:
             --expr '
               let
                 pkgs = import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/nixos-unstable.tar.gz") {};
+                nixos = import (pkgs.path + "/nixos/lib/eval-config.nix") { };
               in
-                pkgs.nixos-manual.manualHTML
+                nixos.config.system.build.manual.manualHTML
             '
 
       - name: Copy Outputs to Public Directory
