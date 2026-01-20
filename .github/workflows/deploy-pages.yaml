@@ -12,12 +12,15 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  deploy-pages:
+  build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
+    strategy:
+      matrix:
+        channel:
+          - name: stable
+            branch: nixos-25.11
+          - name: unstable
+            branch: nixos-unstable
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
@@ -25,41 +28,50 @@ jobs:
         with:
           nix_path: nixpkgs=channel:nixos-unstable
 
-      - name: Build Manual from Stable Channel
+      - name: Build Manual
         run: |
           nix build \
             --impure \
-            --out-link result-nixos-manual-stable \
+            --out-link result \
             --print-build-logs \
             --expr '
               let
-                pkgs = import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/nixos-24.11.tar.gz") {};
+                pkgs = import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/${{ matrix.channel.branch }}.tar.gz") {};
                 nixos = import (pkgs.path + "/nixos/lib/eval-config.nix") { };
               in
                 nixos.config.system.build.manual.manualHTML
             '
 
-      - name: Build Manual from Unstable Channel
+      - name: Prepare Artifact
         run: |
-          nix build \
-            --impure \
-            --out-link result-nixos-manual-unstable \
-            --print-build-logs \
-            --expr '
-              let
-                pkgs = import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/nixos-unstable.tar.gz") {};
-                nixos = import (pkgs.path + "/nixos/lib/eval-config.nix") { };
-              in
-                nixos.config.system.build.manual.manualHTML
-            '
+          mkdir --parents artifact/${{ matrix.channel.name }}
+          cp --recursive result/share/doc/nixos/* artifact/${{ matrix.channel.name }}/
 
-      - name: Copy Outputs to Public Directory
+      - uses: actions/upload-artifact@84480863f228bb9747b473957fcc9e309aa96097 # v4.4.3
+        with:
+          name: manual-${{ matrix.channel.name }}
+          path: artifact/${{ matrix.channel.name }}
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: manual-stable
+          path: public/nixos/stable
+
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: manual-unstable
+          path: public/nixos/unstable
+
+      - name: Bypass Jekyll Processing
         run: |
-          mkdir --parents public/nixos/stable public/nixos/unstable
-          cp --recursive --dereference result-nixos-manual-stable/share/doc/nixos/* public/nixos/stable/
-          cp --recursive --dereference result-nixos-manual-unstable/share/doc/nixos/* public/nixos/unstable/
-          # Jekyll is designed to ignore any files or folders that start with an underscore (_) or a dot (.) character.
-          # Do not use Jekyll to process these files. Just serve them exactly as they are.
           touch public/.nojekyll
 
       - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4.0.0
