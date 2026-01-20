@@ -37,7 +37,9 @@ jobs:
             --expr '
               let
                 pkgs = import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/${{ matrix.channel.branch }}.tar.gz") {};
-                nixos = import (pkgs.path + "/nixos/lib/eval-config.nix") { };
+                nixos = import (pkgs.path + "/nixos/lib/eval-config.nix") {
+                  modules = [ ];
+                };
               in
                 nixos.config.system.build.manual.manualHTML
             '
