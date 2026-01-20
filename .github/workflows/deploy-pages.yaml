@@ -25,26 +25,37 @@ jobs:
         with:
           nix_path: nixpkgs=channel:nixos-unstable
 
-      - name: Build
+      - name: Build Manual from Stable Channel
         run: |
           nix build \
             --impure \
-            --out-link result-nixos-manual \
+            --out-link result-nixos-manual-stable \
+            --print-build-logs \
+            --expr '
+              let
+                pkgs = import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/nixos-stable.tar.gz") {};
+              in
+                pkgs.nixos-manual.manualHTML
+            '
+
+      - name: Build Manual from Unstable Channel
+        run: |
+          nix build \
+            --impure \
+            --out-link result-nixos-manual-unstable \
             --print-build-logs \
             --expr '
               let
                 pkgs = import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/nixos-unstable.tar.gz") {};
-                nixos = import (pkgs.path + "/nixos/lib/eval-config.nix") {
-                  modules = [ ({ ... }: { system.stateVersion = "25.11"; }) ];
-                };
               in
-                nixos.config.system.build.manual.manualHTML
+                pkgs.nixos-manual.manualHTML
             '
 
-      - name: Copy
+      - name: Copy Outputs to Public Directory
         run: |
-          mkdir --parents public/nixos/unstable
-          cp --recursive --dereference result-nixos-manual/share/doc/nixos/* public/nixos/unstable/
+          mkdir --parents public/nixos/stable public/nixos/unstable
+          cp --recursive --dereference result-nixos-manual-stable/share/doc/nixos/* public/nixos/stable/
+          cp --recursive --dereference result-nixos-manual-unstable/share/doc/nixos/* public/nixos/unstable/
           # Jekyll is designed to ignore any files or folders that start with an underscore (_) or a dot (.) character.
           # Do not use Jekyll to process these files. Just serve them exactly as they are.
           touch public/.nojekyll
