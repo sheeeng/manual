@@ -49,7 +49,7 @@ jobs:
           mkdir --parents artifact/${{ matrix.channel.name }}
           cp --recursive result/share/doc/nixos/* artifact/${{ matrix.channel.name }}/
 
-      - uses: actions/upload-artifact@84480863f228bb9747b473957fcc9e309aa96097 # v4.4.3
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4.4.3
         with:
           name: nixos-manual-${{ matrix.channel.name }}
           path: artifact/${{ matrix.channel.name }}
@@ -91,7 +91,7 @@ jobs:
           mkdir --parents artifact/${{ matrix.channel.name }}
           cp --recursive result/share/doc/home-manager/* artifact/${{ matrix.channel.name }}/
 
-      - uses: actions/upload-artifact@84480863f228bb9747b473957fcc9e309aa96097 # v4.4.3
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4.4.3
         with:
           name: home-manager-manual-${{ matrix.channel.name }}
           path: artifact/${{ matrix.channel.name }}
@@ -104,22 +104,22 @@ jobs:
       pages: write
       id-token: write
     steps:
-      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
           name: nixos-manual-stable
           path: public/nixos/stable
 
-      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
           name: nixos-manual-unstable
           path: public/nixos/unstable
 
-      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
           name: home-manager-manual-stable
           path: public/home-manager/stable
 
-      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
           name: home-manager-manual-unstable
           path: public/home-manager/unstable
