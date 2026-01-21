@@ -60,11 +60,11 @@ jobs:
       matrix:
         channel:
           - name: stable
-            nixpkgs_branch: release-24.11
-            hm_branch: release-24.11
+            nixpkgs_branch: release-25.11
+            home_manager_branch: release-25.11
           - name: unstable
             nixpkgs_branch: nixos-unstable
-            hm_branch: master
+            home_manager_branch: master
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
@@ -81,7 +81,7 @@ jobs:
             --expr '
               let
                 pkgs = import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/${{ matrix.channel.nixpkgs_branch }}.tar.gz") {};
-                home-manager = import (fetchTarball "https://github.com/nix-community/home-manager/archive/${{ matrix.channel.hm_branch }}.tar.gz") { inherit pkgs; };
+                home-manager = import (fetchTarball "https://github.com/nix-community/home-manager/archive/${{ matrix.channel.home_manager_branch }}.tar.gz") { inherit pkgs; };
               in
                 home-manager.docs.html
             '
