@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  build-nixos:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -28,7 +28,7 @@ jobs:
         with:
           nix_path: nixpkgs=channel:nixos-unstable
 
-      - name: Build Manual
+      - name: Build NixOS Manual
         run: |
           nix build \
             --impure \
@@ -51,11 +51,53 @@ jobs:
 
       - uses: actions/upload-artifact@84480863f228bb9747b473957fcc9e309aa96097 # v4.4.3
         with:
-          name: manual-${{ matrix.channel.name }}
+          name: nixos-manual-${{ matrix.channel.name }}
+          path: artifact/${{ matrix.channel.name }}
+
+  build-home-manager:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        channel:
+          - name: stable
+            nixpkgs_branch: release-24.11
+            hm_branch: release-24.11
+          - name: unstable
+            nixpkgs_branch: nixos-unstable
+            hm_branch: master
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+
+      - uses: cachix/install-nix-action@4e002c8ec80594ecd40e759629461e26c8abed15 # v31.9.0
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+
+      - name: Build Home Manager Manual
+        run: |
+          nix build \
+            --impure \
+            --out-link result \
+            --print-build-logs \
+            --expr '
+              let
+                pkgs = import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/${{ matrix.channel.nixpkgs_branch }}.tar.gz") {};
+                home-manager = import (fetchTarball "https://github.com/nix-community/home-manager/archive/${{ matrix.channel.hm_branch }}.tar.gz") { inherit pkgs; };
+              in
+                home-manager.docs.html
+            '
+
+      - name: Prepare Artifact
+        run: |
+          mkdir --parents artifact/${{ matrix.channel.name }}
+          cp --recursive result/share/doc/home-manager/* artifact/${{ matrix.channel.name }}/
+
+      - uses: actions/upload-artifact@84480863f228bb9747b473957fcc9e309aa96097 # v4.4.3
+        with:
+          name: home-manager-manual-${{ matrix.channel.name }}
           path: artifact/${{ matrix.channel.name }}
 
   deploy:
-    needs: build
+    needs: [build-nixos, build-home-manager]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -64,13 +106,23 @@ jobs:
     steps:
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
-          name: manual-stable
+          name: nixos-manual-stable
           path: public/nixos/stable
 
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
-          name: manual-unstable
+          name: nixos-manual-unstable
           path: public/nixos/unstable
+
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: home-manager-manual-stable
+          path: public/home-manager/stable
+
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: home-manager-manual-unstable
+          path: public/home-manager/unstable
 
       - name: Create Index Page
         run: |
@@ -80,7 +132,7 @@ jobs:
           <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>NixOS Manual</title>
+            <title>Nix Manuals</title>
             <style>
               body {
                 font-family: system-ui, -apple-system, sans-serif;
@@ -90,6 +142,7 @@ jobs:
                 line-height: 1.6;
               }
               h1 { color: #333; }
+              h2 { color: #555; margin-top: 30px; }
               ul { list-style: none; padding: 0; }
               li { margin: 10px 0; }
               a {
@@ -101,10 +154,18 @@ jobs:
             </style>
           </head>
           <body>
-            <h1>NixOS Manual</h1>
+            <h1>Nix Manuals</h1>
+
+            <h2>NixOS</h2>
             <ul>
-            <li><a href="nixos/stable/">NixOS Stable</a></li>
-            <li><a href="nixos/unstable/">NixOS Unstable</a></li>
+              <li><a href="nixos/stable/">NixOS Stable</a></li>
+              <li><a href="nixos/unstable/">NixOS Unstable</a></li>
+            </ul>
+
+            <h2>Home Manager</h2>
+            <ul>
+              <li><a href="home-manager/stable/">Home Manager Stable</a></li>
+              <li><a href="home-manager/unstable/">Home Manager Unstable</a></li>
             </ul>
           </body>
           </html>
