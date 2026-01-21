@@ -1,3 +1,3 @@
 # manual
 
-A collection of manual.
+A compilation of manuals.
