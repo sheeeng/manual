@@ -5,9 +5,25 @@ updates:
     schedule:
       interval: "daily"
     groups:
-      github-actions-same-version:
+      github-actions:
         patterns:
           - "*"
     labels:
       - dependencies
       - github-actions
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    groups:
+      pip:
+        patterns:
+          - "*"
+        update-types:
+          - major
+          - minor
+          - patch
+    labels:
+      - dependencies
+      - pre-commit
+    open-pull-requests-limit: 10
