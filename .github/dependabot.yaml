@@ -16,7 +16,7 @@ updates:
     schedule:
       interval: "daily"
     groups:
-      pre-commit:
+      pre-commit-hooks:
         patterns:
           - "*"
         update-types:
@@ -25,5 +25,5 @@ updates:
           - patch
     labels:
       - dependencies
-      - pre-commit
+      - pre-commit-hooks
     open-pull-requests-limit: 10
