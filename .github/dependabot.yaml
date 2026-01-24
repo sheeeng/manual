@@ -16,3 +16,4 @@ updates:
     labels:
       - dependencies
       - github-actions
+    open-pull-requests-limit: 5
