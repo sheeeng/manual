@@ -2,9 +2,11 @@
 
 While both commands produce the same HTML documentation, they represent two different "eras" of the Nix command-line interface.
 
-## Verbatim Commands
+## NixOS Manual
 
-### Classic Version
+### Verbatim Commands
+
+#### Classic Version
 
 ```shell
 nix-build \
@@ -15,7 +17,7 @@ nix-build \
   '
 ```
 
-### Modern Version
+#### Modern Version
 
 ```shell
 nix build --impure --expr '
@@ -29,7 +31,7 @@ nix build --impure --expr '
 '
 ```
 
-## Simpler Version
+### Simpler Version
 
 ```shell
 nix-build '<nixpkgs/nixos>' --attr options.manualHTML
@@ -58,6 +60,31 @@ nix-instantiate --find-file nixpkgs/nixos
 
 ---
 
+## Nixpkgs Manual
+
+The nixpkgs manual documents the packages, functions, and libraries available in nixpkgs.
+
+### Modern Version
+
+```shell
+nix build --impure --expr '
+  let
+    pkgs = import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/nixos-unstable.tar.gz") {};
+  in
+    pkgs.nixos.htmlDocs.nixpkgsManual
+'
+```
+
+### Simpler Version
+
+```shell
+nix-build '<nixpkgs>' --attr nixos.htmlDocs.nixpkgsManual
+```
+
+The simpler version has the same limitations as described above for the NixOS manual. For reproducible builds, use the modern version with `fetchTarball`.
+
+---
+
 ## Structural Comparison
 
 | Feature          | `nix-build` (Classic)   | `nix build` (Modern)                   |
@@ -74,13 +101,13 @@ nix-instantiate --find-file nixpkgs/nixos
 
 ### CLI Generation
 
-* **`nix-build`**: Part of the original Nix toolset. It is highly compatible and does not require experimental features to be enabled in `nix.conf`.
-* **`nix build`**: Part of the new Nix 2.0+ CLI. It is designed to be more consistent and works natively with Flakes.
+- **`nix-build`**: Part of the original Nix toolset. It is highly compatible and does not require experimental features to be enabled in `nix.conf`.
+- **`nix build`**: Part of the new Nix 2.0+ CLI. It is designed to be more consistent and works natively with Flakes.
 
 ### Implicit vs. Explicit Scoping
 
-* **Implicit (`with import ...`)**: The classic command uses `with`, which dumps all variables from Nixpkgs into the scope. It is shorter to type but can make it unclear where a variable like `path` is coming from.
-* **Explicit (`let pkgs = ... in`)**: The modern command uses a `let` block to define variables. This is considered best practice because it makes the code easier to read and debug.
+- **Implicit (`with import ...`)**: The classic command uses `with`, which dumps all variables from Nixpkgs into the scope. It is shorter to type but can make it unclear where a variable like `path` is coming from.
+- **Explicit (`let pkgs = ... in`)**: The modern command uses a `let` block to define variables. This is considered best practice because it makes the code easier to read and debug.
 
 ### Purity and Reproducibility
 

@@ -96,8 +96,47 @@ jobs:
           name: home-manager-manual-${{ matrix.channel.name }}
           path: artifact/${{ matrix.channel.name }}
 
+  build-nixpkgs:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        channel:
+          - name: stable
+            branch: release-25.11
+          - name: unstable
+            branch: nixos-unstable
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - uses: cachix/install-nix-action@4e002c8ec80594ecd40e759629461e26c8abed15 # v31.9.0
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+
+      - name: Build Nixpkgs Manual
+        run: |
+          nix build \
+            --impure \
+            --out-link result \
+            --print-build-logs \
+            --expr '
+              let
+                pkgs = import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/${{ matrix.channel.branch }}.tar.gz") {};
+              in
+                pkgs.nixpkgs-manual
+            '
+
+      - name: Prepare Artifact
+        run: |
+          mkdir --parents artifact/${{ matrix.channel.name }}
+          cp --recursive result/share/doc/nixpkgs/* artifact/${{ matrix.channel.name }}/
+
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4.4.3
+        with:
+          name: nixpkgs-manual-${{ matrix.channel.name }}
+          path: artifact/${{ matrix.channel.name }}
+
   deploy:
-    needs: [build-nixos, build-home-manager]
+    needs: [build-nixos, build-home-manager, build-nixpkgs]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -123,6 +162,16 @@ jobs:
         with:
           name: home-manager-manual-unstable
           path: public/home-manager/unstable
+
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: nixpkgs-manual-stable
+          path: public/nixpkgs/stable
+
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: nixpkgs-manual-unstable
+          path: public/nixpkgs/unstable
 
       - name: Create Index Page
         run: |
@@ -160,6 +209,12 @@ jobs:
             <ul>
               <li><a href="nixos/stable/">NixOS Stable</a></li>
               <li><a href="nixos/unstable/">NixOS Unstable</a></li>
+            </ul>
+
+            <h2>Nixpkgs</h2>
+            <ul>
+              <li><a href="nixpkgs/stable/">Nixpkgs Stable</a></li>
+              <li><a href="nixpkgs/unstable/">Nixpkgs Unstable</a></li>
             </ul>
 
             <h2>Home Manager</h2>
