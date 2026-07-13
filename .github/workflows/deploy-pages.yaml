@@ -49,7 +49,7 @@ jobs:
           mkdir --parents artifact/${{ matrix.channel.name }}
           cp --recursive result/share/doc/nixos/* artifact/${{ matrix.channel.name }}/
 
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4.4.3
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: nixos-manual-${{ matrix.channel.name }}
           path: artifact/${{ matrix.channel.name }}
@@ -91,7 +91,7 @@ jobs:
           mkdir --parents artifact/${{ matrix.channel.name }}
           cp --recursive result/share/doc/home-manager/* artifact/${{ matrix.channel.name }}/
 
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4.4.3
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: home-manager-manual-${{ matrix.channel.name }}
           path: artifact/${{ matrix.channel.name }}
@@ -130,7 +130,7 @@ jobs:
           mkdir --parents artifact/${{ matrix.channel.name }}
           cp --recursive result/share/doc/nixpkgs/* artifact/${{ matrix.channel.name }}/
 
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4.4.3
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: nixpkgs-manual-${{ matrix.channel.name }}
           path: artifact/${{ matrix.channel.name }}
