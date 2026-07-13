@@ -1,6 +1,5 @@
 # https://github.com/markdownlint/markdownlint/blob/main/docs/RULES.md
 # https://github.com/DavidAnson/markdownlint/blob/main/schema/.markdownlint.yaml
-
 # keep-sorted start group=yes
 MD010: # no-hard-tabs
   code_blocks: true

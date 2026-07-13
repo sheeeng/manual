@@ -2,7 +2,6 @@
 # pre-commit-hooks: https://github.com/dependabot/dependabot-core/issues/1524
 # terraform's required_version: https://github.com/dependabot/dependabot-core/issues/8725
 # tflint: https://github.com/dependabot/dependabot-core/issues/7515
----
 version: 2
 updates:
   - package-ecosystem: "github-actions"
